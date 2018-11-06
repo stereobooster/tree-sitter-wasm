@@ -1,0 +1,13 @@
+.gitmodules
+.npmrc
+src/
+ext/
+scripts/
+circle.yml
+*github-release*
+tree-sitter.js-*.tgz
+configure
+generated/
+*.gypi
+*.gyp
+build/

@@ -1,0 +1,19 @@
+{
+  "name": "tree-sitter-wasm",
+  "version": "0.0.1",
+  "description": "tree-sitter-wasm",
+  "scripts": {
+    "test": "node --expose-wasm test/tree-sitter.test.js",
+    "build": "docker run --rm -v $(pwd):/src -t apiaryio/emcc:1.38.11 scripts/emcbuild.sh",
+    "clean": "docker run --rm -v $(pwd):/src -t apiaryio/emcc:1.38.11 scripts/emcclean.sh",
+    "release": "scripts/release.sh"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "repository": "https://github.com/stereobooster/tree-sitter-wasm",
+  "author": "stereobooster",
+  "license": "MIT",
+  "types": "./tree-sitter.d.ts",
+  "devDependencies": {}
+}

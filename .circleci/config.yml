@@ -1,0 +1,90 @@
+version: 2
+
+aliases:
+  - &tag-filter
+    filters:
+      tags:
+        only: /^v.*/
+
+  - &test-workflow
+    <<: *tag-filter
+    requires:
+      - build
+
+workflows:
+  version: 2
+  build-test:
+    jobs:
+      - build: *tag-filter
+      - test-node10: *test-workflow
+      - deploy:
+          requires:
+            - build
+            - test-node10
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+jobs:
+  build:
+    docker:
+      - image: apiaryio/emcc:1.38.11
+    steps:
+      - run: apt-get install -y git-core
+      - checkout
+      - run: git submodule update --recursive --init
+      - run: npm install
+      - run: ./scripts/emcbuild.sh
+      - persist_to_workspace:
+          root: lib
+          paths:
+            - tree-sitter.js
+            - tree-sitter.js.mem
+            - tree-sitter.nomem.js
+      - store_artifacts:
+          path: lib
+
+  test-node: &test-node
+    docker:
+      - image: node
+    steps:
+      - checkout
+      - run: git submodule update --recursive --init
+      - attach_workspace:
+          at: lib
+      - run:
+          name: Installing Compiler
+          command: |
+            echo "deb http://ftp.us.debian.org/debian unstable main contrib non-free" > /etc/apt/sources.list.d/unstable.list
+            apt-get update
+            apt-get install -y -t unstable gcc-7 g++-7
+      - run: npm install
+      - run:
+          name: Building tree-sitter
+          command: |
+            cd ext/tree-sitter/tree-sitter
+            CXX=g++-7 ./configure
+            make tree-sitter
+      - run:
+          # Note, on Node 4 (older NPM) this MUST happen after NPM install
+          # otherwise NPM install triggers a rebuild
+          name: Building tree-sitter
+          command: CXX=g++-7 npm install ext/tree-sitter
+      - run: npm test
+
+  test-node10:
+    <<: *test-node
+    docker:
+      - image: node:10
+
+  deploy:
+    docker:
+      - image: node:10
+    steps:
+      - checkout
+      - run: git submodule update --recursive --init
+      - attach_workspace:
+          at: .
+      - run: ./scripts/release.sh
