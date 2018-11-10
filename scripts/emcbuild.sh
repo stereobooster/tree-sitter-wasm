@@ -2,9 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-set EMCC_DEBUG=1
-
-em++ -s VERBOSE=1 \
+EMCC_DEBUG=1 em++ -s VERBOSE=1 \
     -O3 \
     -s WASM=1 \
     -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' \
