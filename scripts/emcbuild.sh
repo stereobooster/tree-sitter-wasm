@@ -2,7 +2,10 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-em++ -O3 \
+set EMCC_DEBUG=1
+
+em++ -s VERBOSE=1 \
+    -O3 \
     -s WASM=1 \
     -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' \
     -std=c++14 \
